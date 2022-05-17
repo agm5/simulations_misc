@@ -25,16 +25,19 @@ using namespace std;
 using namespace gio;
 
 
-int pos2npix(float x, float y){
+int pos2npix(float x, float y, float d, float theta_max){
     // periodic boundary conditions for the box
     x = (x<0)? x+150: x; 
     x = (x>=150) ? x-150: x; 
     y = (y<0)? y+150: y;
     y = (y>=150) ? y-150:y;
-    int npix_x = (int)((x/150.)*256.);
-    int npix_y = (int)((y/150.)*256.);
-    int npix  = npix_x*256+npix_y;
-    return npix;
+    int npix_x = (int)((x/(theta_max*d))*256.);
+    int npix_y = (int)((y/(theta_max*d))*256.);
+    int pix_num  = npix_x*256 + npix_y; 
+    if(npix_x > 255 || npix_y > 255) {
+	pix_num = -1;
+    } 
+    return pix_num;
 }
 
 int main(int argc, char *argv[]) {
@@ -222,9 +225,14 @@ int main(int argc, char *argv[]) {
       umin = std::min(umin, ui) ; umax = std::max(umax, ui);
       dcmin = std::min(dcmin, dist_comov2) ; dcmax = std::max(dcmax, dist_comov2);
         
-      int pix_num = pos2npix(xd,yd);
-      map_output_ksz[pix_num] += mi*v_los/dist_comov2/aa; // one factor of a cancels from v_los and dist_comov2
-      map_output_tsz[pix_num] += mi*mui*ui/dist_comov2;   // a^2 factors cancel out in ui and dist_comov2  
+      float theta_max = 0.033722945766;
+      float dist_comov = sqrt(dist_comov2);
+      int pix_num = pos2npix(xd,yd,dist_comov,theta_max);
+      if(pix_num == -1) {
+	      continue;
+      }
+      map_output_ksz[pix_num] += npix*mi*v_los/dist_comov2/aa/theta_max/theta_max; 
+      map_output_tsz[pix_num] += npix*mi*mui*ui/dist_comov2/theta_max/theta_max;  
     } 
      
 
