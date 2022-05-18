@@ -25,16 +25,18 @@ using namespace std;
 using namespace gio;
 
 
-int pos2npix(float x, float y, float d, float theta_max){
+int pos2npix(float x, float y, float z, float theta_max){
     // periodic boundary conditions for the box
     x = (x<0)? x+150: x; 
     x = (x>=150) ? x-150: x; 
     y = (y<0)? y+150: y;
     y = (y>=150) ? y-150:y;
-    int npix_x = (int)((x/(theta_max*d))*256.);
-    int npix_y = (int)((y/(theta_max*d))*256.);
+    float theta_x = atan(x/z);
+    float theta_y = atan(y/z);
+    int npix_x = (int)((theta_x/theta_max)*256.);
+    int npix_y = (int)((theta_y/theta_max)*256.);
     int pix_num  = npix_x*256 + npix_y; 
-    if(npix_x > 255 || npix_y > 255) {
+    if(npix_x > 255 || npix_y > 255 || npix_y < 0 || npix_y < 0) {
 	pix_num = -1;
     } 
     return pix_num;
@@ -94,7 +96,7 @@ int main(int argc, char *argv[]) {
     Method = GenericIO::FileIOMPI;
  
   int npix = 256*256;
-  float pixsize = (150.*150.)/(256.*256.);
+  float theta_max = 0.0335981009;
   vector<float> map_output_total_ksz(npix);
   vector<float> map_output_total_tsz(npix);
   vector<float> map_output_ksz;
@@ -224,15 +226,14 @@ int main(int argc, char *argv[]) {
       mmin = std::min(mmin, mi) ; mmax = std::max(mmax, mi);
       umin = std::min(umin, ui) ; umax = std::max(umax, ui);
       dcmin = std::min(dcmin, dist_comov2) ; dcmax = std::max(dcmax, dist_comov2);
-        
-      float theta_max = 0.033722945766;
+       
       float dist_comov = sqrt(dist_comov2);
-      int pix_num = pos2npix(xd,yd,dist_comov,theta_max);
+      int pix_num = pos2npix(xd,yd,zd,theta_max);
       if(pix_num == -1) {
 	      continue;
       }
-      map_output_ksz[pix_num] += npix*mi*v_los/dist_comov2/aa/theta_max/theta_max; 
-      map_output_tsz[pix_num] += npix*mi*mui*ui/dist_comov2/theta_max/theta_max;  
+      map_output_ksz[pix_num] += npix*mi*v_los/aa; 
+      map_output_tsz[pix_num] += npix*mi*mui*ui;  
     } 
      
 
@@ -262,6 +263,7 @@ int main(int argc, char *argv[]) {
   } // nsteps for loop
    cout << "after for loop" << endl;
   // Physical constants (CGS units)
+  float pixsize = (theta_max*theta_max*(dcmin+dcmax)*(dcmin+dcmax)/4)/(256.*256.);
   const double SIGMAT = 6.652e-25;
   const double MP     = 1.6737236e-24;
   const double ME     = 9.1093836e-28;
