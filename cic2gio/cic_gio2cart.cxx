@@ -232,8 +232,8 @@ int main(int argc, char *argv[]) {
       if(pix_num == -1) {
 	      continue;
       }
-      map_output_ksz[pix_num] += npix*mi*v_los/aa; 
-      map_output_tsz[pix_num] += npix*mi*mui*ui;  
+      map_output_ksz[pix_num] += npix*mi*v_los/aa/dist_comov2/theta_max/theta_max; 
+      map_output_tsz[pix_num] += npix*mi*mui*ui/dist_comov2/theta_max/theta_max;  
     } 
      
 
@@ -263,7 +263,6 @@ int main(int argc, char *argv[]) {
   } // nsteps for loop
    cout << "after for loop" << endl;
   // Physical constants (CGS units)
-  float pixsize = (theta_max*theta_max*(dcmin+dcmax)*(dcmin+dcmax)/4.)/(256.*256.);
   const double SIGMAT = 6.652e-25;
   const double MP     = 1.6737236e-24;
   const double ME     = 9.1093836e-28;
@@ -278,8 +277,8 @@ int main(int argc, char *argv[]) {
   const double MPC_TO_CM = 3.0856776e24;
 
   // kSZ and tSZ conversion factors. After applying, both are dimensionless with one factor of h to be included later 
-  const float KSZ_CONV = (float)(-SIGMAT*CHIE/MUE/MP/CLIGHT)*(MSUN_TO_G*KM_TO_CM/MPC_TO_CM/MPC_TO_CM)*(1.0/samplerate)*(1.0/pixsize);
-  const float TSZ_CONV = (float)((GAMMA-1.0)*SIGMAT*CHIE/MUE/ME/CLIGHT/CLIGHT)*(MSUN_TO_G*KM_TO_CM*KM_TO_CM/MPC_TO_CM/MPC_TO_CM)*(1.0/samplerate)*(1.0/pixsize);
+  const float KSZ_CONV = (float)(-SIGMAT*CHIE/MUE/MP/CLIGHT)*(MSUN_TO_G*KM_TO_CM/MPC_TO_CM/MPC_TO_CM)*(1.0/samplerate);
+  const float TSZ_CONV = (float)((GAMMA-1.0)*SIGMAT*CHIE/MUE/ME/CLIGHT/CLIGHT)*(MSUN_TO_G*KM_TO_CM*KM_TO_CM/MPC_TO_CM/MPC_TO_CM)*(1.0/samplerate);
   if(commRank == root_process) {
     std::cout << " CHIE: " << CHIE << " SAMPLERATE: " << samplerate << std::endl;
     std::cout << " KSZ_CONV: " << KSZ_CONV << " TSZ_CONV: " << TSZ_CONV << std::endl;
