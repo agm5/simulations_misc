@@ -263,7 +263,7 @@ int main(int argc, char *argv[]) {
   } // nsteps for loop
    cout << "after for loop" << endl;
   // Physical constants (CGS units)
-  float pixsize = (theta_max*theta_max*(dcmin+dcmax)*(dcmin+dcmax)/4)/(256.*256.);
+  float pixsize = (theta_max*theta_max*(dcmin+dcmax)*(dcmin+dcmax)/4.)/(256.*256.);
   const double SIGMAT = 6.652e-25;
   const double MP     = 1.6737236e-24;
   const double ME     = 9.1093836e-28;
